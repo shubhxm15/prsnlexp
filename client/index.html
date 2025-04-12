@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Expense Tracker Admin</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+</head>
+
+<body>
+    <button class="hamburger" onclick="toggleSidebar()">☰</button>
+    <div id="admin-portal" class="admin-portal container">
+        <!-- Sidebar Navigation -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>Expense Tracker</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <button class="tab-btn active" onclick="openTab('all-transactions')">
+                    <i class="fas fa-list"></i> All Transactions
+                </button>
+                <button class="tab-btn" onclick="openTab('personal')">
+                    <i class="fas fa-user"></i> Personal
+                </button>
+                <button class="tab-btn" onclick="openTab('business')">
+                    <i class="fas fa-briefcase"></i> Business
+                </button>
+                <button class="tab-btn" onclick="openTab('loan')">
+                    <i class="fas fa-hand-holding-usd"></i> Loan
+                </button>
+            </nav>
+            <div class="sidebar-footer">
+                <button class="btn btn-danger" id="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </div>
+        <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <!-- All Transactions Tab -->
+            <div id="all-transactions" class="tab-content active-tab">
+                <div class="header">
+                    <h1>All Transactions</h1>
+                </div>
+
+                <!-- Summary Cards -->
+                <div class="dashboard-cards">
+                    <div class="stat-card positive">
+                        <h3>Total Credited</h3>
+                        <div class="value" id="all-credited">₹0.00</div>
+                    </div>
+                    <div class="stat-card negative">
+                        <h3>Total Debited</h3>
+                        <div class="value" id="all-debited">₹0.00</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Current Balance</h3>
+                        <div class="value" id="all-balance">₹0.00</div>
+                    </div>
+                </div>
+
+                <!-- Transactions Table -->
+                <div class="card">
+                    <h2 class="card-title">Transaction History</h2>
+                    <div class="search-container">
+                        <input type="text" id="all-transactions-search" class="form-control"
+                            placeholder="Search transactions by description..." onkeyup="searchExpenses()" />
+                        <button class="btn primary-btn" onclick="clearSearch()">
+                            <i class="fas fa-times"></i> Clear
+                        </button>
+                    </div>
+                    <div class="table-responsive">
+                        <table id="all-transactions-table" class="styled-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Type</th>
+                                    <th>Payment Mode</th>
+                                    <th>Category</th>
+                                    <th>Description</th>
+                                    <th>Amount (₹)</th>
+                                    <th>Transaction</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Will be populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="table-controls">
+                        <button class="btn secondary-btn" onclick="generatePDF()">
+                            <i class="fas fa-file-pdf"></i> Export to PDF
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Personal Tab -->
+            <div id="personal" class="tab-content">
+                <div class="header">
+                    <h1>Personal Transactions</h1>
+                </div>
+
+                <!-- Personal Summary -->
+                <div class="dashboard-cards">
+                    <div class="stat-card positive">
+                        <h3>Personal Credited</h3>
+                        <div class="value" id="personal-credited">₹0.00</div>
+                    </div>
+                    <div class="stat-card negative">
+                        <h3>Personal Debited</h3>
+                        <div class="value" id="personal-debited">₹0.00</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Personal Balance</h3>
+                        <div class="value" id="personal-balance">₹0.00</div>
+                    </div>
+                </div>
+
+                <!-- Add Personal Transaction Form -->
+                <div class="card">
+                    <h2 class="card-title">Add Personal Transaction</h2>
+                    <div class="form-row">
+                        <div class="form-col">
+                            <div class="form-group">
+                                <label>Category</label>
+                                <select id="personal-category" class="form-control">
+                                    <option value="">Loading...</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-col">
+                            <div class="form-group">
+                                <label>Amount (₹)</label>
+                                <input type="number" id="personal-amount" class="form-control" placeholder="0.00" min="0"
+                                    step="0.01" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col">
+                            <div class="form-group">
+                                <label>Transaction Type</label>
+                                <select id="personal-transaction-type" class="form-control">
+                                    <option value="debit">Debit (Money Out)</option>
+                                    <option value="credit">Credit (Money In)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-col">
+                            <div class="form-group">
+                                <label>Payment Mode</label>
+                                <input type="text" id="personal-payment-mode" class="form-control"
+                                    placeholder="Cash, UPI, etc." />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <input type="text" id="personal-description" class="form-control"
+                            placeholder="What was this for?" />
+                    </div>
+                    <button class="btn primary-btn" onclick="addPersonalExpense()">
+                        Add Transaction
+                    </button>
+                </div>
+
+                <!-- Personal Transactions Table -->
+                <div class="card">
+                    <h2 class="card-title">Personal Transaction History</h2>
+                    <div class="table-responsive">
+                        <table id="personal-transactions-table" class="styled-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Category</th>
+                                    <th>Payment Mode</th>
+                                    <th>Description</th>
+                                    <th>Amount (₹)</th>
+                                    <th>Transaction</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Will be populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Business Tab -->
+            <div id="business" class="tab-content">
+                <!-- ... (same structure as personal tab but with business fields) ... -->
+            </div>
+
+            <!-- Loan Tab -->
+            <div id="loan" class="tab-content">
+                <!-- ... (same structure as personal tab but with loan fields) ... -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Transaction Modal -->
+    <div id="edit-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeEditModal()">&times;</span>
+            <h2>Edit Transaction</h2>
+            <form id="edit-expense-form">
+                <input type="hidden" id="edit-id">
+                <input type="hidden" id="edit-type">
+                
+                <div class="form-group">
+                    <label for="edit-amount">Amount</label>
+                    <input type="number" id="edit-amount" step="0.01" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="edit-description">Description</label>
+                    <input type="text" id="edit-description" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="edit-category">Category</label>
+                    <select id="edit-category" required></select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="edit-transaction-type">Transaction Type</label>
+                    <select id="edit-transaction-type" required>
+                        <option value="credit">Credit</option>
+                        <option value="debit">Debit</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="edit-payment-mode">Payment Mode</label>
+                    <select id="edit-payment-mode">
+                        <option value="Cash">Cash</option>
+                        <option value="Card">Card</option>
+                        <option value="Bank Transfer">Bank Transfer</option>
+                        <option value="UPI">UPI</option>
+                    </select>
+                </div>
+                
+                <div class="form-group" id="edit-due-date-group" style="display:none;">
+                    <label for="edit-due-date">Due Date</label>
+                    <input type="date" id="edit-due-date">
+                </div>
+                
+                <div class="form-buttons">
+                    <button type="submit" class="btn btn-primary">Update</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeEditModal()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Simple functions that delegate to app.js
+        function toggleSidebar() {
+            if (window.toggleSidebar) window.toggleSidebar();
+        }
+        
+        function openTab(tabId) {
+            if (window.openTab) window.openTab(tabId);
+        }
+        
+        function clearSearch() {
+            if (window.clearSearch) window.clearSearch();
+        }
+        
+        function generatePDF() {
+            if (window.generatePDF) window.generatePDF();
+        }
+    </script>
+    
+    <script src="app.js"></script>
+</body>
+</html>
